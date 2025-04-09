@@ -1,103 +1,641 @@
-import Image from "next/image";
+'use client';
+
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Input,
+  Select,
+  Stack,
+  Text,
+  VStack,
+  HStack,
+  Checkbox,
+  Textarea,
+  Card,
+  CardHeader,
+  CardBody,
+  SimpleGrid,
+  Flex,
+  Image as ChakraImage,
+  Divider as ChakraDivider,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  Radio,
+  RadioGroup,
+  useToast,
+} from '@chakra-ui/react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+type FormInputEvent = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+interface FormSubmitEvent extends React.FormEvent<HTMLFormElement> {}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const toast = useToast();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    applicationStatus: 'New Card',
+    branch: '',
+    applicationDate: new Date().toISOString().split('T')[0],
+    cardType: '',
+    title: '',
+    firstName: '',
+    surname: '',
+    nationalIdNumber: '',
+    dateOfBirth: '',
+    gender: '',
+    maritalStatus: '',
+    physicalAddress: '',
+    country: 'Zimbabwe',
+    province: '',
+    city: '',
+    landlineNumber: '',
+    mobileNumber: '',
+    email: '',
+    usdAccountNumber: '',
+    zwgAccountNumber: '',
+    amountInWords: '',
+    amountInFigures: '',
+    incomeSource: '',
+    incomeOutline: '',
+    monthlyIncomeAmount: '',
+    hasNationalIdentity: false,
+    hasValidPassport: false,
+    hasPassportPhoto: false,
+    hasProofOfResidence: false,
+    hasPayslip: false,
+    identityNumber: '',
+    hasAgreedToTerms: false,
+    hasAcknowledgedReceipt: false,
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value,
+    });
+  };
+
+  const handleSubmit = async (e: FormSubmitEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Application submitted.',
+          description: 'Your application has been successfully submitted.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+        
+        // Redirect to success page or clear form
+        router.push(`/success?id=${data.id}`);
+      } else {
+        toast({
+          title: 'Submission failed.',
+          description: data.error || 'An error occurred while submitting your application.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: 'Submission failed.',
+        description: 'An error occurred while submitting your application.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Container maxW="container.xl" py={10}>
+      <Card mb={8} boxShadow="lg">
+        <CardHeader bg="brand.700" color="white" py={4}>
+          <Flex justify="space-between" align="center">
+            <Heading size="lg">FBC MASTERCARD APPLICATION</Heading>
+            <ChakraImage 
+              src="/fbc-logo.png" 
+              alt="FBC Logo" 
+              height="50px" 
+              fallback={<Box bg="gray.200" width="150px" height="50px" display="flex" alignItems="center" justifyContent="center">FBC BANK</Box>} 
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          </Flex>
+        </CardHeader>
+        <CardBody>
+          <form onSubmit={handleSubmit}>
+            <VStack spacing="8" align="stretch">
+              {/* Application Status Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">CARD APPLICATION STATUS</Heading>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacingX={6} spacingY={6}>
+                  <FormControl isRequired>
+                    <FormLabel>Application Status</FormLabel>
+                    <Select 
+                      name="applicationStatus" 
+                      value={formData.applicationStatus}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    >
+                      <option value="New Card">New Card</option>
+                      <option value="Replacement Card">Replacement Card</option>
+                    </Select>
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Branch</FormLabel>
+                    <Input 
+                      name="branch" 
+                      value={formData.branch}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+                
+                {formData.applicationStatus === 'Replacement Card' && (
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacingX={6} spacingY={6} mt={4}>
+                    <FormControl>
+                      <FormLabel>Old Card Number</FormLabel>
+                      <Input 
+                        name="oldCardNumber" 
+                        value={formData.oldCardNumber || ''}
+                        onChange={handleChange}
+                        bg="white"
+                        borderColor="gray.300"
+                      />
+                    </FormControl>
+                    
+                    <FormControl>
+                      <FormLabel>Replacement Reason</FormLabel>
+                      <Input 
+                        name="replacementReason" 
+                        value={formData.replacementReason || ''}
+                        onChange={handleChange}
+                        bg="white"
+                        borderColor="gray.300"
+                      />
+                    </FormControl>
+                  </SimpleGrid>
+                )}
+              </Box>
+              
+              <Divider />
+              
+              {/* Card Type Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">TYPE OF CARD</Heading>
+                <FormControl isRequired>
+                  <FormLabel>Card Type</FormLabel>
+                  <Select 
+                    name="cardType" 
+                    value={formData.cardType}
+                    onChange={handleChange}
+                    bg="white"
+                    borderColor="gray.300"
+                  >
+                    <option value="">Select Card Type</option>
+                    <option value="World Black Debit">World Black Debit</option>
+                    <option value="Platinum Debit">Platinum Debit</option>
+                    <option value="Gold Debit">Gold Debit</option>
+                    <option value="Standard Debit">Standard Debit</option>
+                  </Select>
+                </FormControl>
+              </Box>
+              
+              <Divider />
+              
+              {/* Documents Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">DOCUMENTS SUPPLIED BY CARDHOLDER</Heading>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                  <VStack align="start" spacing={3}>
+                    <Checkbox 
+                      name="hasNationalIdentity" 
+                      isChecked={formData.hasNationalIdentity}
+                      onChange={handleChange}
+                      colorScheme="blue"
+                    >
+                      National Identity
+                    </Checkbox>
+                    
+                    <Checkbox 
+                      name="hasValidPassport" 
+                      isChecked={formData.hasValidPassport}
+                      onChange={handleChange}
+                      colorScheme="blue"
+                    >
+                      Passport (valid)
+                    </Checkbox>
+                    
+                    <Checkbox 
+                      name="hasPassportPhoto" 
+                      isChecked={formData.hasPassportPhoto}
+                      onChange={handleChange}
+                      colorScheme="blue"
+                    >
+                      Passport Photo
+                    </Checkbox>
+                  </VStack>
+                  
+                  <VStack align="start" spacing={3}>
+                    <Checkbox 
+                      name="hasProofOfResidence" 
+                      isChecked={formData.hasProofOfResidence}
+                      onChange={handleChange}
+                      colorScheme="blue"
+                    >
+                      Proof of Residence
+                    </Checkbox>
+                    
+                    <Checkbox 
+                      name="hasPayslip" 
+                      isChecked={formData.hasPayslip}
+                      onChange={handleChange}
+                      colorScheme="blue"
+                    >
+                      Payslip
+                    </Checkbox>
+                    
+                    <FormControl>
+                      <FormLabel>Identity Number</FormLabel>
+                      <Input 
+                        name="identityNumber" 
+                        value={formData.identityNumber}
+                        onChange={handleChange}
+                        bg="white"
+                        borderColor="gray.300"
+                      />
+                    </FormControl>
+                  </VStack>
+                </SimpleGrid>
+              </Box>
+              
+              <Divider />
+              
+              {/* Income Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">SOURCE OF INCOME</Heading>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                  <FormControl isRequired>
+                    <FormLabel>Income Outline</FormLabel>
+                    <Input 
+                      name="incomeOutline" 
+                      value={formData.incomeOutline}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Source</FormLabel>
+                    <Input 
+                      name="incomeSource" 
+                      value={formData.incomeSource}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Monthly Income Amount</FormLabel>
+                    <Input 
+                      name="monthlyIncomeAmount" 
+                      value={formData.monthlyIncomeAmount}
+                      onChange={handleChange}
+                      type="number"
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+              </Box>
+              
+              <Divider />
+              
+              {/* Personal Details Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">CUSTOMER PERSONAL DETAILS</Heading>
+                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+                  <FormControl isRequired>
+                    <FormLabel>Title</FormLabel>
+                    <Select 
+                      name="title" 
+                      value={formData.title}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    >
+                      <option value="">Select Title</option>
+                      <option value="Mr">Mr</option>
+                      <option value="Mrs">Mrs</option>
+                      <option value="Miss">Miss</option>
+                      <option value="Dr">Dr</option>
+                      <option value="Prof">Prof</option>
+                    </Select>
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>First Name(s)</FormLabel>
+                    <Input 
+                      name="firstName" 
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Surname</FormLabel>
+                    <Input 
+                      name="surname" 
+                      value={formData.surname}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+                
+                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mt={4}>
+                  <FormControl isRequired>
+                    <FormLabel>National ID Number</FormLabel>
+                    <Input 
+                      name="nationalIdNumber" 
+                      value={formData.nationalIdNumber}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Date of Birth</FormLabel>
+                    <Input 
+                      name="dateOfBirth" 
+                      value={formData.dateOfBirth}
+                      onChange={handleChange}
+                      type="date"
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Gender</FormLabel>
+                    <RadioGroup 
+                      name="gender" 
+                      value={formData.gender}
+                      onChange={(value) => setFormData({...formData, gender: value})}
+                    >
+                      <Stack direction="row">
+                        <Radio value="Male" colorScheme="blue">Male</Radio>
+                        <Radio value="Female" colorScheme="blue">Female</Radio>
+                      </Stack>
+                    </RadioGroup>
+                  </FormControl>
+                </SimpleGrid>
+                
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mt={4}>
+                  <FormControl isRequired>
+                    <FormLabel>Marital Status</FormLabel>
+                    <Select 
+                      name="maritalStatus" 
+                      value={formData.maritalStatus}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    >
+                      <option value="">Select Marital Status</option>
+                      <option value="single">Single</option>
+                      <option value="married">Married</option>
+                      <option value="divorced">Divorced</option>
+                      <option value="widowed">Widowed</option>
+                    </Select>
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Physical Address</FormLabel>
+                    <Textarea 
+                      name="physicalAddress" 
+                      value={formData.physicalAddress}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+                
+                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mt={4}>
+                  <FormControl isRequired>
+                    <FormLabel>Country</FormLabel>
+                    <Input 
+                      name="country" 
+                      value={formData.country}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Province</FormLabel>
+                    <Input 
+                      name="province" 
+                      value={formData.province}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>City</FormLabel>
+                    <Input 
+                      name="city" 
+                      value={formData.city}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+                
+                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mt={4}>
+                  <FormControl>
+                    <FormLabel>Landline Number</FormLabel>
+                    <Input 
+                      name="landlineNumber" 
+                      value={formData.landlineNumber}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Mobile Number</FormLabel>
+                    <Input 
+                      name="mobileNumber" 
+                      value={formData.mobileNumber}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl isRequired>
+                    <FormLabel>Email</FormLabel>
+                    <Input 
+                      name="email" 
+                      value={formData.email}
+                      onChange={handleChange}
+                      type="email"
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+              </Box>
+              
+              <Divider />
+              
+              {/* Linked Accounts Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">ACCOUNTS TO BE LINKED</Heading>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                  <FormControl>
+                    <FormLabel>USD Account Number</FormLabel>
+                    <Input 
+                      name="usdAccountNumber" 
+                      value={formData.usdAccountNumber}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl>
+                    <FormLabel>ZWG Account Number</FormLabel>
+                    <Input 
+                      name="zwgAccountNumber" 
+                      value={formData.zwgAccountNumber}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+              </Box>
+              
+              <Divider />
+              
+              {/* Amount Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">AMOUNT TO BE LOADED</Heading>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                  <FormControl>
+                    <FormLabel>Amount in Words</FormLabel>
+                    <Input 
+                      name="amountInWords" 
+                      value={formData.amountInWords}
+                      onChange={handleChange}
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                  
+                  <FormControl>
+                    <FormLabel>Amount in Figures</FormLabel>
+                    <Input 
+                      name="amountInFigures" 
+                      value={formData.amountInFigures}
+                      onChange={handleChange}
+                      type="number"
+                      bg="white"
+                      borderColor="gray.300"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+              </Box>
+              
+              <Divider />
+              
+              {/* Declaration Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">DECLARATION</Heading>
+                <FormControl isRequired>
+                  <Checkbox 
+                    name="hasAgreedToTerms" 
+                    isChecked={formData.hasAgreedToTerms}
+                    onChange={handleChange}
+                    colorScheme="blue"
+                    size="lg"
+                  >
+                    I agree to the terms and conditions
+                  </Checkbox>
+                </FormControl>
+              </Box>
+              
+              <Divider />
+              
+              {/* Acknowledgement Section */}
+              <Box>
+                <Heading size="md" mb={4} color="brand.700">ACKNOWLEDGEMENT</Heading>
+                <FormControl isRequired>
+                  <Checkbox 
+                    name="hasAcknowledgedReceipt" 
+                    isChecked={formData.hasAcknowledgedReceipt}
+                    onChange={handleChange}
+                    colorScheme="blue"
+                    size="lg"
+                  >
+                    I acknowledge receipt of the card
+                  </Checkbox>
+                </FormControl>
+              </Box>
+              
+              <Button 
+                type="submit" 
+                colorScheme="blue" 
+                size="lg" 
+                isLoading={isSubmitting}
+                loadingText="Submitting"
+                mt={4}
+              >
+                Submit Application
+              </Button>
+            </VStack>
+          </form>
+        </CardBody>
+      </Card>
+    </Container>
   );
 }

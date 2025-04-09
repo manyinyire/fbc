@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id                  String   @id @default(uuid())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Card Application Status
+  applicationStatus   String   // New Card, Replacement Card, etc.
+  oldCardNumber       String?  // If replacement
+  replacementReason   String?  // Expired, Lost, Stolen, Other
+  oldCardIssuedAt     String?  // Branch where old card was issued
+  oldCardDateIssued   String?  // Date when old card was issued
+  
+  // Type of Card
+  cardType            String   // World Black Debit, World Black Prepaid, Platinum Prepaid, Gold Prepaid
+  
+  // Documents Supplied
+  hasNationalIdentity Boolean  @default(false)
+  hasValidPassport    Boolean  @default(false)
+  hasPassportPhoto    Boolean  @default(false)
+  hasProofOfResidence Boolean  @default(false)
+  hasPayslip          Boolean  @default(false)
+  identityNumber      String?
+  
+  // Source of Income
+  incomeOutline       String?
+  incomeSource        String   // Employed, Contractual, Self, Other
+  incomeSourceOther   String?
+  monthlyIncomeAmount Float?
+  
+  // Customer Personal Details
+  title               String?
+  surname             String
+  firstName           String
+  nationalIdNumber    String
+  dateOfBirth         String
+  gender              String
+  maritalStatus       String?
+  physicalAddress     String
+  country             String
+  province            String?
+  city                String?
+  landlineNumber      String?
+  mobileNumber        String
+  email               String?
+  
+  // Linked Accounts
+  usdAccountNumber    String?
+  zwgAccountNumber    String?
+  
+  // Amount to be Loaded
+  amountInWords       String?
+  amountInFigures     Float?
+  
+  // Declaration
+  hasAgreedToTerms    Boolean  @default(false)
+  
+  // Acknowledgement
+  hasAcknowledgedReceipt Boolean @default(false)
+  cardNumberIssued    String?
+  
+  // Bank Use
+  vipStatus           String?  // VIP or NORMAL
+  clearanceSummary    String?
+  checkedBy           String?
+  checkedDate         String?
+  checkerComments     String?
+  approvedBy          String?
+  approvedDate        String?
+  approverComments    String?
+  
+  // PDF and Email Status
+  pdfGenerated        Boolean  @default(false)
+  emailSent           Boolean  @default(false)
+  emailSentAt         DateTime?
+  emailSentTo         String?
+  
+  // Branch and Date
+  branch              String?
+  applicationDate     String?
+}
